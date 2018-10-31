@@ -14,7 +14,7 @@ mongoose.connect(dbConfig.url, {
 });
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'Connection database error'));
-db.once('open', function() {
+db.once('open', () => {
   console.log('Connected to database');
 });
 
@@ -27,6 +27,6 @@ app.use((req, res, next) => {
   res.status(404).send('404 page not found');
 });
 
-app.listen(port, function () {
+app.listen(port, () => {
   console.log(`http://localhost:${port}`);
 });
