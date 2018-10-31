@@ -25,3 +25,13 @@ exports.getAllUsers = (req, res) => {
     }
   });
 };
+
+exports.updateUser = (req, res) => {
+  User.findByIdAndUpdate(req.params.userId, {$set: req.body}, (err, user) => {
+    if (err) {
+      res.json(err);
+    } else {
+      res.json(user);
+    }
+  });
+};
