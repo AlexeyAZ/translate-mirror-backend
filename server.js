@@ -14,19 +14,13 @@ mongoose.connect(dbConfig.url, {
 });
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'Connection database error'));
-db.once('open', () => {
-  console.log('Connected to database');
-});
+db.once('open', () => console.log('Connected to database'));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => res.send('translate-mirror app server'));
 app.use('/api/users', user);
-app.use((req, res, next) => {
-  res.status(404).send('404 page not found');
-});
+app.use((req, res, next) =>  res.status(404).send('404 page not found'));
 
-app.listen(port, () => {
-  console.log(`http://localhost:${port}`);
-});
+app.listen(port, () => console.log(`http://localhost:${port}`));
