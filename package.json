@@ -1,5 +1,5 @@
 {
-  "name": "translate-mirror",
+  "name": "translate-mirror-backend",
   "version": "0.3.0",
   "description": "Translate mirror app",
   "engines": {
