@@ -1,29 +1,63 @@
+const passport = require('passport');
+require('../services/passport');
+
 const User = require('../models/userModel');
 
-exports.createUser = (req, res) => {
-  let user = new User(req.body);
-  user.save();
-  res.status(201).send(user);
-};
-
-exports.getUser = (req, res) => {
-  User.findById(req.params.userId, (err, user) => {
-    if (err) {
-      res.json(err);
+exports.createUser = (req, res, next) => {
+  passport.authenticate('createUser', {session: false}, (err, user, info) => {
+    if (err && !user) {
+      res.status(401).send(err); 
     } else {
       res.json(user);
     }
-  });
+  })(req,res,next);
 };
 
-exports.getAllUsers = (req, res) => {
-  User.find({}, (err, users) => {
+exports.userLogin = (req, res, next) => {
+  passport.authenticate('userLogin', {session: false}, (err, msg, info) => {
     if (err) {
-      res.json(err);
-    } else {
-      res.json(users);
+      res.status(401).send(err); 
     }
-  });
+    if (info !== undefined) {
+      res.json(info);
+    } else {
+      res.json(msg);
+    }
+  })(req,res,next);
+}
+
+exports.getUser = (req, res, next) => {
+  passport.authenticate('jwt', {session: false}, (err, user, info) => {
+    if (err) {
+      res.status(500).json(err);
+    }
+    if (user) {
+      res.json(user);
+    }
+    if (info) {
+      res.json(info);
+    }
+  })(req,res,next);
+};
+
+exports.getAllUsers = (req, res, next) => {
+  passport.authenticate('jwt', {session: false}, (err, user, info) => {
+    if (err) {
+      res.status(500).json(err);
+    }
+    if (user) {
+      User.find({}, (err, users) => {
+        if (err) {
+          res.json(err);
+        } else {
+          res.json(users);
+        }
+      });
+    }
+    if (info) {
+      res.status(500).send(info.message);
+    }
+  })(req, res, next);
 };
 
 exports.updateUser = (req, res) => {
