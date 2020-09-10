@@ -1,0 +1,13 @@
+POST http://localhost:5000/api/dictionary/
+content-type: application/json
+
+{
+  "text": "time"
+}
+###
+POST http://localhost:5000/api/dictionary/add
+content-type: application/json
+
+{
+  "text": "time"
+}

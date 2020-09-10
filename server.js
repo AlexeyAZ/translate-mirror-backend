@@ -1,42 +1,54 @@
 const express = require('express');
+const { ApolloServer } = require('apollo-server-express');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const methodOverride = require('method-override');
-const passport = require('passport')
 const logger = require('morgan');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
-const errorHandlers = require('./middleware/errorHandlers');
+// eslint-disable-next-line no-unused-vars
+const mongoose = require('./db');
+const modules = require('./modules');
+const dataSources = require('./dataSources')
+
+const words = require('./data/parseData');
 
 const port = process.env.PORT || 5000;
-const db = require('./database');
+const server = new ApolloServer({
+  modules,
+  introspection: true,
+  playground: true,
+  dataSources,
+  context: ({ req }) => {
+    const token = req.headers.authorization || null;
+    return { token };
+  },
+  formatError: error => {
+    console.log(error);
+    delete error.extensions.exception;
+    return error;
+  },
+});
+
 const app = express();
-
-const user = require('./app/routes/userRouter');
-
-db.on('error', console.error.bind(console, 'Connection database error'));
-db.once('open', () => console.log('Connected to database'));
-
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
-//   next();
-// });
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://localhost:3000', 'http://192.168.1.11:3000'],
+  credentials: true,
+}));
 app.use(logger('dev'));
 app.use(methodOverride());
+app.use(cookieParser());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer().any());
-app.use(passport.initialize());
 
-app.get('/', (req, res) => res.send('translate-mirror app server'));
+app.get('/', (req, res) => res.send('translate-mirror app'));
 
-app.use('/api/users', user);
-app.use(errorHandlers.logErrors);
-app.use(errorHandlers.clientErrorHandler);
-app.use(errorHandlers.errorHandler);
+server.applyMiddleware({ app, cors: false, });
 
-app.listen(port, () => console.log(`http://localhost:${port}`));
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}${server.graphqlPath}`);
+});
